@@ -4,15 +4,21 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
+var Twitter = require('twitter');
 var index = require('./routes/index');
 var users = require('./routes/users');
+var csvWriter = require('csv-write-stream');
+var fs = require('fs');
+var writer = csvWriter();
+
+
 
 var app = express();
 
+app.set('port', process.env.PORT || 3000);
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine', 'ejs');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -21,26 +27,55 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
+var filename = "out.csv"; ///you already have this one.
+var fullpath = __dirname + "/uploads/" + filename;
 app.use('/', index);
 app.use('/users', users);
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+var client = new Twitter({
+  consumer_key: '87t6bC2KqH0BCSurpv56owF1Y',
+  consumer_secret: 'n57YB0fV5VpMGVNfVH3MAhVpckDvvBM4msjtph09H6RecVa4l1',
+  access_token_key: '327797166-Jp47smzfKwBUgWLyFMlMjrSxmrP7kw8bTLpFLPoY',
+  access_token_secret: 	'pWuqbJCmkKVD5X4MZtj51Q1mnDVzPpzUg2GgfsDdvH9aQ'
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+app.get("/trends", function(req,res){
+
+var writer = csvWriter({ headers: ["trends", "number"]})
+writer.pipe(fs.createWriteStream('./views/out.csv'));
+// writer.write(['world', 'bar'])
+// writer.end()
+//4.
+// obj.from.array(dataInfo).to.path('../datafile/dataInfo.csv');
+  var params = {id: 23424977};
+  console.log(params)
+  client.get('trends/place',params, function(error,data){
+    if(error){
+      console.log(error)
+    }
+    else {
+      console.log((data[0].trends).length);
+      data[0].trends.forEach(function(element) {
+       if(element.tweet_volume != null){
+         console.log(element)
+          writer.write([element.name, element.tweet_volume])
+        
+       }
+      }, this);
+       writer.end();
+       res.render("bubblechart");
+    }
+  });
+  
+});
+
+
+
+
+
+var server = app.listen(app.get('port'), function() {
+    var port = server.address().port;
+    console.log('Magic happens on port ' + port);
 });
 
 module.exports = app;

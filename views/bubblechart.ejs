@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<svg width="960" height="960" font-family="sans-serif" font-size="10" text-anchor="middle"></svg>
+<script
+  src="http://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height");
+
+var format = d3.format(",d");
+
+var color = d3.scaleOrdinal(d3.schemeCategory20c);
+
+var pack = d3.pack()
+    .size([width, height])
+    .padding(1.5);
+ $.ajax({
+        type: "GET",
+        url: "a.txt",
+        dataType: "text",
+        success: function(data) {console.log(data);}
+     });
+d3.csv("out.csv", function(d) {
+    console.log(d)
+  d.value = +d.number;
+  if (d.value) return d;
+}, function(error, classes) {
+  if (error) throw error;
+
+  var root = d3.hierarchy({children: classes})
+      .sum(function(d) { return d.value; })
+      .each(function(d) {
+        if (id = d.data.id) {
+          var id, i = id.lastIndexOf(".");
+          d.id = id;
+          d.package = id.slice(0, i);
+          d.class = id.slice(i + 1);
+        }
+      });
+      
+      //console.log(root)
+  var node = svg.selectAll(".node")
+    .data(pack(root).leaves())
+    .enter().append("g")
+      .attr("class", "node")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+  node.append("circle")
+      .attr("id", function(d) { return d.trends; })
+      .attr("r", function(d) { return d.r; })
+      .style("fill", function(d) { return color(d.package); });
+
+
+node.append("text")
+        .text(function(d) {console.log(d) ; return [d.data.trends,d.data.number]; })
+        .style('fill', 'Red')
+        .style("font-size", "25px");
+
+  node.append("title")
+      .text(function(d) { return d.data.trends + "\n" + format(d.data.number); });
+});
+
+</script>
