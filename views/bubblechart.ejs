@@ -58,7 +58,7 @@ d3.csv("out.csv", function(d) {
 node.append("text")
         .text(function(d) {console.log(d) ; return [d.data.trends,d.data.number]; })
         .style('fill', 'Red')
-        .style("font-size", "25px");
+        .style("font-size", "15px");
 
   node.append("title")
       .text(function(d) { return d.data.trends + "\n" + format(d.data.number); });
