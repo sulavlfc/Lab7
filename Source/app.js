@@ -20,15 +20,12 @@ app.set('port', process.env.PORT || 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-// var filename = "out.csv"; ///you already have this one.
-// var fullpath = __dirname + "/uploads/" + filename;
+
 app.use('/', index);
 app.use('/users', users);
 var client = new Twitter({
@@ -43,10 +40,7 @@ app.get("/trends", function(req,res){
 
 var writer = csvWriter({ headers: ["trends", "number"]})
 writer.pipe(fs.createWriteStream('./public/out.csv'));
-// writer.write(['world', 'bar'])
-// writer.end()
-//4.
-// obj.from.array(dataInfo).to.path('../datafile/dataInfo.csv');
+
   var params = {id: 23424977};
   console.log(params)
   client.get('trends/place',params, function(error,data){
@@ -68,10 +62,6 @@ writer.pipe(fs.createWriteStream('./public/out.csv'));
   });
   
 });
-
-
-
-
 
 var server = app.listen(app.get('port'), function() {
     var port = server.address().port;
